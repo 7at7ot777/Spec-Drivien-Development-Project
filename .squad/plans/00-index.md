@@ -4,4 +4,4 @@ One row per feature folder under `.squad/plans/`. `NN` continues as a global exe
 
 | Feature | Overview | NN range |
 |---------|----------|----------|
-| app-configuration | [app-configuration/00-overview.md](app-configuration/00-overview.md) | 01 |
+| app-configuration | [app-configuration/00-overview.md](app-configuration/00-overview.md) | 01–02 |

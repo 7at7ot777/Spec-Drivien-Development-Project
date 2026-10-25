@@ -1,0 +1,14 @@
+version: 1
+project:
+  name: sdd-project
+  primaryLanguage: php
+  projectRoots:
+    - .
+tracker:
+  type: jira
+  workspace: mohamedhathout3.atlassian.net
+naming:
+  includeTrackerId: true
+  globalSequence: true
+agents:
+  - claude-code

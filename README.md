@@ -71,6 +71,67 @@ The `.env.example` file documents every required variable, grouped by feature:
 
 Keep `.env` out of git. `.env.example` documents defaults and is always committed.
 
+## API
+
+- **Base URL:** `{APP_URL}/api/v1` (for example `http://localhost:8000/api/v1`).
+- **Auth:** Laravel Sanctum. Send `Authorization: Bearer <token>`. Token issuing endpoints arrive in KAN-23.
+- **Reference endpoints:** `GET /api/v1/ping` (public) and `GET /api/v1/me` (requires a token).
+
+### Response format
+
+Every API response uses one envelope.
+
+Success:
+
+```json
+{
+  "success": true,
+  "message": null,
+  "data": { "id": 1, "name": "Jane" }
+}
+```
+
+Paginated list. `data` is always a list, and `meta` and `links` are always present:
+
+```json
+{
+  "success": true,
+  "message": null,
+  "data": [ { "id": 1 }, { "id": 2 } ],
+  "meta": { "current_page": 1, "per_page": 15, "total": 42, "last_page": 3, "from": 1, "to": 15 },
+  "links": { "first": "…?page=1", "last": "…?page=3", "prev": null, "next": "…?page=2" }
+}
+```
+
+Error. `errors` holds `field => string[]` for 422 and is `null` otherwise:
+
+```json
+{
+  "success": false,
+  "message": "The given data was invalid.",
+  "errors": { "email": ["The email field is required."] }
+}
+```
+
+| Status | When | `message` |
+|---|---|---|
+| 401 | Missing or invalid token | `Unauthenticated.` |
+| 403 | Authorization denied | `Forbidden.` (or the policy's custom message) |
+| 404 | Unknown route or missing record | `Resource not found.` |
+| 405 | Wrong HTTP method | `Method not allowed.` |
+| 422 | Validation failed | `The given data was invalid.` |
+| 429 | Rate limited | `Too many requests.` |
+| 500 | Unhandled error | `Server error.` (real message only when `APP_DEBUG=true`) |
+
+API errors are always JSON, never HTML or redirects. Web (Inertia) routes keep their normal error pages.
+
+### Adding an endpoint
+
+1. Add the route to `routes/api.php` with a relative path and an `api.` name prefix (`Route::get('teams', …)->name('api.teams.index')`). The `/api/v1` prefix is applied automatically.
+2. Validate input with a Form Request in `app/Http/Requests/<Area>/`.
+3. Map models through an API Resource in `app/Http/Resources/`.
+4. Respond with `App\Http\Responses\ApiResponse::success()` or, for lists, `ApiResponse::paginated($query->paginate(), SomeResource::class)`. **Never** return raw models or call `response()->json()` directly.
+
 ## Folder Conventions
 
 - **`app/Actions/<Area>/`** — Single-purpose business operations. Each class has one public `handle()` method. Example: `app/Actions/Teams/CreateTeam.php`.
